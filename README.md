@@ -1,4 +1,4 @@
-# ChemStation Delivery Schedule Kiosk
+# fabrikam Delivery Schedule Kiosk
 
 A full-screen delivery calendar display designed to run on a Windows 11 kiosk (TV/monitor) or be hosted in Azure. Reads events from a shared Exchange/Outlook mailbox via Microsoft Graph using a service account — no user login required.
 
@@ -113,13 +113,13 @@ Connect-ExchangeOnline
 # Create a mail-enabled security group that contains only the delivery mailbox
 New-DistributionGroup `
   -Name "DeliveryScheduleScopeGroup" `
-  -PrimarySmtpAddress "deliveryschedule-scope@chemstation.com" `
+  -PrimarySmtpAddress "deliveryschedule-scope@fabrikam.com" `
   -Type Security
 
 # Add the delivery mailbox as the only member
 Add-DistributionGroupMember `
   -Identity "DeliveryScheduleScopeGroup" `
-  -Member "deliveryschedule@chemstation.com"
+  -Member "deliveryschedule@fabrikam.com"
 ```
 
 ### 2.3 Create the management scope
@@ -127,7 +127,7 @@ Add-DistributionGroupMember `
 ```powershell
 New-ManagementScope `
   -Name "DeliveryScheduleScope" `
-  -RecipientRestrictionFilter "MemberOfGroup -eq 'deliveryschedule-scope@chemstation.com'"
+  -RecipientRestrictionFilter "MemberOfGroup -eq 'deliveryschedule-scope@fabrikam.com'"
 ```
 
 ### 2.4 Assign the scoped role to your app
@@ -149,7 +149,7 @@ Allow up to 30 minutes for the scope to propagate, then verify:
 ```powershell
 Test-ServicePrincipalAuthorization `
   -Identity "<YOUR_CLIENT_ID>" `
-  -Resource "deliveryschedule@chemstation.com"
+  -Resource "deliveryschedule@fabrikam.com"
 ```
 
 A successful result confirms the app can access only that mailbox.
@@ -182,7 +182,7 @@ In the project folder, create a file named `.env` (no extension):
 TENANT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 CLIENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 CLIENT_SECRET=your~secret~value~here
-MAILBOX_UPN=deliveryschedule@chemstation.com
+MAILBOX_UPN=deliveryschedule@fabrikam.com
 
 # Number of days ahead to show on the board
 LOOKAHEAD_DAYS=14
@@ -255,7 +255,7 @@ nssm install DeliveryKiosk "C:\Program Files\nodejs\node.exe"
 nssm set DeliveryKiosk AppDirectory "C:\Apps\delivery-schedule-kiosk"
 nssm set DeliveryKiosk AppParameters "server/index.js"
 nssm set DeliveryKiosk AppEnvironmentExtra "NODE_ENV=production"
-nssm set DeliveryKiosk DisplayName "ChemStation Delivery Schedule Kiosk"
+nssm set DeliveryKiosk DisplayName "fabrikam Delivery Schedule Kiosk"
 nssm set DeliveryKiosk Description "Serves the delivery schedule board on port 3000"
 nssm set DeliveryKiosk Start SERVICE_AUTO_START
 nssm set DeliveryKiosk AppStdout "C:\Apps\delivery-schedule-kiosk\logs\service.log"
@@ -332,7 +332,7 @@ az appservice plan create `
 
 # Create the web app (Node.js 20)
 az webapp create `
-  --name chemstation-delivery-kiosk `
+  --name fabrikam-delivery-kiosk `
   --resource-group rg-delivery-kiosk `
   --plan plan-delivery-kiosk `
   --runtime "NODE:20-lts"
@@ -344,13 +344,13 @@ Never put secrets in your deployment package. Configure them as App Settings:
 
 ```powershell
 az webapp config appsettings set `
-  --name chemstation-delivery-kiosk `
+  --name fabrikam-delivery-kiosk `
   --resource-group rg-delivery-kiosk `
   --settings `
     TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
     CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
     CLIENT_SECRET="your~secret~value~here" `
-    MAILBOX_UPN="deliveryschedule@chemstation.com" `
+    MAILBOX_UPN="deliveryschedule@fabrikam.com" `
     LOOKAHEAD_DAYS="14" `
     NODE_ENV="production"
 ```
@@ -376,13 +376,13 @@ az keyvault secret set `
 
 # Enable system-assigned managed identity on the App Service
 az webapp identity assign `
-  --name chemstation-delivery-kiosk `
+  --name fabrikam-delivery-kiosk `
   --resource-group rg-delivery-kiosk
 
 # Grant the App Service identity access to read the secret
 az keyvault set-policy `
   --name kv-delivery-kiosk `
-  --object-id $(az webapp identity show --name chemstation-delivery-kiosk --resource-group rg-delivery-kiosk --query principalId -o tsv) `
+  --object-id $(az webapp identity show --name fabrikam-delivery-kiosk --resource-group rg-delivery-kiosk --query principalId -o tsv) `
   --secret-permissions get
 ```
 
@@ -408,7 +408,7 @@ Compress-Archive -Path `
   -DestinationPath deploy.zip -Force
 
 az webapp deploy `
-  --name chemstation-delivery-kiosk `
+  --name fabrikam-delivery-kiosk `
   --resource-group rg-delivery-kiosk `
   --src-path deploy.zip `
   --type zip
@@ -422,7 +422,7 @@ Tell App Service to run the server:
 
 ```powershell
 az webapp config set `
-  --name chemstation-delivery-kiosk `
+  --name fabrikam-delivery-kiosk `
   --resource-group rg-delivery-kiosk `
   --startup-file "node server/index.js"
 ```
@@ -432,7 +432,7 @@ az webapp config set `
 Once hosted on Azure, configure Assigned Access (Step A.2) to point Edge at the Azure URL instead of `localhost`:
 
 ```
-https://chemstation-delivery-kiosk.azurewebsites.net
+https://fabrikam-delivery-kiosk.azurewebsites.net
 ```
 
 For a custom domain, configure it under **App Service → Custom domains**.
@@ -481,7 +481,7 @@ Get-Content C:\Apps\delivery-schedule-kiosk\logs\service-error.log -Tail 50
 
 ### Events are not showing / wrong events
 
-- Confirm the mailbox UPN is correct: try `https://graph.microsoft.com/v1.0/users/deliveryschedule@chemstation.com/calendarView` in [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)
+- Confirm the mailbox UPN is correct: try `https://graph.microsoft.com/v1.0/users/deliveryschedule@fabrikam.com/calendarView` in [Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)
 - Check that events in the calendar fall within `LOOKAHEAD_DAYS` from today
 - All-day events use a different date format — verify they appear correctly in Outlook first
 - **A previous day's all-day event appears in Upcoming:** This is a Graph API boundary
