@@ -1,0 +1,40 @@
+/* Inter — closest web-safe match for SF Pro on Windows */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: #16232B; /* cs-dark / neutral-015 */
+  color: #FAFBFB;            /* neutral-002 */
+  font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scrolling for upcoming rows */
+.events-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #404B51 transparent;
+}
+.events-scroll::-webkit-scrollbar { height: 4px; width: 4px; }
+.events-scroll::-webkit-scrollbar-thumb { background: #404B51; border-radius: 2px; }
+
+/* Today auto-scroller — scrollable but no visible scrollbar */
+.today-scroller {
+  overflow-x: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.today-scroller::-webkit-scrollbar { display: none; }
+
+@keyframes scroll-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
